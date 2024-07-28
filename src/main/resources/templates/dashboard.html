@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Todo List Dashboard</title>
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .completed {
+            text-decoration: line-through;
+            color: grey;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Welcome to Your Todo List Dashboard!</h1>
+        
+        <!-- Display Todo List -->
+        <div th:if="${tasks.empty}" class="alert alert-warning text-center">
+            No tasks found.
+        </div>
+        <div th:unless="${tasks.empty}">
+            <div id="taskTable">
+                <table class="table table-hover mt-4">
+                    <thead>
+                        <tr>
+                            <th>Task ID</th>
+                            <th>Description</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="task : ${tasks}" th:classappend="${task.status == 'completed'} ? 'completed' : ''">
+                            <td th:text="${task.id}">Id</td>
+                            <td th:text="${task.description}">Task Description</td>
+                            <td>
+                                <button class="btn btn-sm" th:classappend="${task.status == 'pending'} ? 'btn-warning' : 'btn-success'" th:text="${task.status}" th:data-id="${task.id}" onclick="changeStatus(this)"></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Navigation Links -->
+        <div class="mt-4">
+            <a href="/add" class="btn btn-primary">Add Task</a>
+            <a href="/dashboard" class="btn btn-secondary">View All Tasks</a>
+        </div>
+        
+        <!-- Logout Form -->
+        <form th:action="@{/logout}" method="post" class="mt-4">
+            <button type="submit" class="btn btn-danger">Logout</button>
+        </form>
+    </div>
+    
+    <!-- Include jQuery and Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <!-- JavaScript for changing status -->
+    <script>
+        function changeStatus(button) {
+            var taskId = button.getAttribute("data-id");
+            var currentStatus = button.innerText;
+            var newStatus = currentStatus === "pending" ? "completed" : "pending";
+            
+            $.ajax({
+                url: "/task/status",
+                method: "POST",
+                data: { id: taskId, status: newStatus },
+                success: function(response) {
+                    $('#taskTable').html(response);
+                },
+                error: function(xhr, status, error) {
+                    alert("Error changing status: " + error);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
